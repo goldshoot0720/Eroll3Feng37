@@ -136,15 +136,34 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // 載入選項
-        window.onload = function() {
-            fetchOptions("考試年度", "examYear");
-            fetchOptions("考試等級", "examLevel");
-            fetchOptions("職系", "jobSystem");
-            fetchOptions("類科", "jobCategory");
+        window.onload = async function() {
+            await fetchOptions("考試年度", "examYear");
+            await fetchOptions("考試等級", "examLevel");
+            await fetchOptions("職系", "jobSystem");
+            await fetchOptions("類科", "jobCategory");
+
+            // 從 localStorage 讀取上次選擇的資料
+            const savedExamYear = localStorage.getItem("examYear");
+            const savedExamLevel = localStorage.getItem("examLevel");
+            const savedJobSystem = localStorage.getItem("jobSystem");
+            const savedJobCategory = localStorage.getItem("jobCategory");
+
+            if (savedExamYear) {
+                document.getElementById("examYear").value = savedExamYear;
+            }
+            if (savedExamLevel) {
+                document.getElementById("examLevel").value = savedExamLevel;
+            }
+            if (savedJobSystem) {
+                document.getElementById("jobSystem").value = savedJobSystem;
+            }
+            if (savedJobCategory) {
+                document.getElementById("jobCategory").value = savedJobCategory;
+            }
         };
 
         // 加載下拉選單選項
-        function fetchOptions(column, elementId) {
+        async function fetchOptions(column, elementId) {
             const columnMapping = {
                 "考試年度": "enroll3year",
                 "考試等級": "enroll3level",
@@ -152,21 +171,20 @@
                 "類科": "enroll3class"
             };
 
-            fetch(`ReadData.php?column=${columnMapping[column]}`)
-                .then(response => response.json())
-                .then(data => {
-                    const select = document.getElementById(elementId);
-                    data.forEach(item => {
-                        const option = document.createElement("option");
-                        option.value = item;
-                        option.textContent = item;
-                        select.appendChild(option);
-                    });
-                });
+            const response = await fetch(`ReadData.php?column=${columnMapping[column]}`);
+            const data = await response.json();
+
+            const select = document.getElementById(elementId);
+            data.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item;
+                option.textContent = item;
+                select.appendChild(option);
+            });
         }
 
         // 查詢結果
-        function getResult() {
+        async function getResult() {
             const examYear = document.getElementById("examYear").value;
             const examLevel = document.getElementById("examLevel").value;
             const jobSystem = document.getElementById("jobSystem").value;
@@ -177,24 +195,30 @@
                 return;
             }
 
+            // 儲存選擇的資料到 localStorage
+            localStorage.setItem("examYear", examYear);
+            localStorage.setItem("examLevel", examLevel);
+            localStorage.setItem("jobSystem", jobSystem);
+            localStorage.setItem("jobCategory", jobCategory);
+
             // 顯示載入動畫
             document.getElementById("loader").style.display = "block";
 
-            fetch(`ReadData.php?examYear=${examYear}&examLevel=${examLevel}&jobSystem=${jobSystem}&jobCategory=${jobCategory}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("loader").style.display = "none";
+            try {
+                const response = await fetch(`ReadData.php?examYear=${examYear}&examLevel=${examLevel}&jobSystem=${jobSystem}&jobCategory=${jobCategory}`);
+                const data = await response.json();
 
-                    if (data.error) {
-                        showAlert(data.error, 'danger');
-                    } else {
-                        displayResults(data);
-                    }
-                })
-                .catch(err => {
-                    document.getElementById("loader").style.display = "none";
-                    showAlert('查詢失敗，請稍後再試。', 'danger');
-                });
+                document.getElementById("loader").style.display = "none";
+
+                if (data.error) {
+                    showAlert(data.error, 'danger');
+                } else {
+                    displayResults(data);
+                }
+            } catch (err) {
+                document.getElementById("loader").style.display = "none";
+                showAlert('查詢失敗，請稍後再試。', 'danger');
+            }
         }
 
         // 顯示查詢結果並合併相同的「用人機關名稱」
