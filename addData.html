@@ -95,6 +95,13 @@
         .footer a:hover {
             text-decoration: underline;
         }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -103,8 +110,10 @@
     <h1>新增資料</h1>
     <form action="InsertData.php" method="POST" onsubmit="return validateForm()">
         <label for="data">資料 (每行為一筆資料, 以空格區隔各欄位):</label>
-        <textarea id="data" name="data" placeholder="每行為一筆資料, 以空格區隔各欄位"></textarea>
-
+        <textarea id="data" name="data" placeholder="每行為一筆資料, 以空格區隔各欄位" aria-label="資料輸入框"></textarea>
+        
+        <div id="error-message" class="error"></div>
+        
         <input type="submit" value="提交資料">
         <i class="fas fa-paper-plane"></i> <!-- Font Awesome icon -->
     </form>
@@ -117,10 +126,12 @@
 <script>
 function validateForm() {
     var data = document.getElementById("data").value.trim();
+    var errorMessage = document.getElementById("error-message");
+    errorMessage.innerHTML = '';  // 清空錯誤訊息
 
     // 檢查是否為空
     if (data === "") {
-        alert("請輸入資料！");
+        errorMessage.innerHTML = "請輸入資料！";
         return false;
     }
 
@@ -131,7 +142,7 @@ function validateForm() {
 
         // 檢查是否為空行
         if (line === "") {
-            alert("錯誤：請不要提交空行！");
+            errorMessage.innerHTML = "錯誤：請不要提交空行！";
             return false;
         }
 
@@ -142,21 +153,29 @@ function validateForm() {
 
         // 檢查每行是否有 10 個欄位
         if (fields.length !== 10) {
-            alert("錯誤：第 " + (i + 1) + " 行資料必須包含 10 個欄位！");
+            errorMessage.innerHTML = "錯誤：第 " + (i + 1) + " 行資料必須包含 10 個欄位！";
             return false;
         }
 
         // 檢查考試年度（民國年）是否在有效範圍（93年到116年）
         var year = parseInt(fields[0]);
         if (isNaN(year) || year < 93 || year > 116) {
-            alert("錯誤：第 " + (i + 1) + " 行的考試年度 (" + fields[0] + ") 必須在民國93年至116年之間！");
+            errorMessage.innerHTML = "錯誤：第 " + (i + 1) + " 行的考試年度 (" + fields[0] + ") 必須在民國93年至116年之間！";
             return false;
         }
 
         // 檢查其他欄位是否為有效字符串（根據您的需求進行檢查）
         if (fields[1].trim() === "" || fields[2].trim() === "" || fields[3].trim() === "" || fields[4].trim() === "") {
-            alert("錯誤：第 " + (i + 1) + " 行的某些欄位不能為空！");
+            errorMessage.innerHTML = "錯誤：第 " + (i + 1) + " 行的某些欄位不能為空！";
             return false;
+        }
+
+        // 檢查數值欄位是否為有效數字
+        for (var j = 5; j < fields.length; j++) {
+            if (isNaN(fields[j])) {
+                errorMessage.innerHTML = "錯誤：第 " + (i + 1) + " 行的欄位 " + (j + 1) + " 必須是數字！";
+                return false;
+            }
         }
     }
 

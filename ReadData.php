@@ -27,6 +27,10 @@ $column = isset($_GET['column']) ? $_GET['column'] : '';
 if ($column) {
     // 查詢下拉選單資料
     $stmt = $conn->prepare("SELECT DISTINCT `$column` FROM `enroll3data`");
+    if ($stmt === false) {
+        die(json_encode(["error" => "準備查詢失敗：" . $conn->error]));
+    }
+
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -39,24 +43,31 @@ if ($column) {
     echo json_encode($data);
 } elseif ($examYear && $examLevel && $jobSystem && $jobCategory) {
     // 查詢根據條件資料
-    $stmt = $conn->prepare("SELECT `用人機關名稱`, `合計` FROM `enroll3data` WHERE `考試年度` = ? AND `考試等級` = ? AND `職系` = ? AND `類科` = ?");
+    $stmt = $conn->prepare("SELECT `enroll3name`, `enroll3total` FROM `enroll3data` WHERE `enroll3year` = ? AND `enroll3level` = ? AND `enroll3grade` = ? AND `enroll3class` = ?");
+    if ($stmt === false) {
+        die(json_encode(["error" => "準備查詢失敗：" . $conn->error]));
+    }
+
     $stmt->bind_param("ssss", $examYear, $examLevel, $jobSystem, $jobCategory);
     $stmt->execute();
     $result = $stmt->get_result();
 
     $data = [];
-    while ($row = $result->fetch_assoc()) {
-        $data[] = [
-            "用人機關名稱" => $row['用人機關名稱'],
-            "合計" => $row['合計']
-        ];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = [
+                "enroll3name" => $row['enroll3name'],
+                "enroll3total" => $row['enroll3total']
+            ];
+        }
+        echo json_encode($data);
+    } else {
+        echo json_encode(["error" => "沒有符合條件的資料"]);
     }
-
-    // 回傳資料
-    echo json_encode($data);
 } else {
     echo json_encode(["error" => "請提供所有查詢條件"]);
 }
 
+// 關閉資料庫連接
 $conn->close();
 ?>

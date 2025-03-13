@@ -145,7 +145,14 @@
 
         // 加載下拉選單選項
         function fetchOptions(column, elementId) {
-            fetch(`ReadData.php?column=${column}`)
+            const columnMapping = {
+                "考試年度": "enroll3year",
+                "考試等級": "enroll3level",
+                "職系": "enroll3grade",
+                "類科": "enroll3class"
+            };
+
+            fetch(`ReadData.php?column=${columnMapping[column]}`)
                 .then(response => response.json())
                 .then(data => {
                     const select = document.getElementById(elementId);
@@ -196,8 +203,8 @@
             let totalSum = 0;  // 用於儲存所有合計的加總
 
             data.forEach(row => {
-                const agencyName = row['用人機關名稱'];
-                const total = row['合計'];
+                const agencyName = row['enroll3name'];  // 用人機關名稱
+                const total = row['enroll3total'];  // 合計
 
                 if (mergedResults[agencyName]) {
                     mergedResults[agencyName] += total;

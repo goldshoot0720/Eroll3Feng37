@@ -18,16 +18,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 取得輸入資料並分行處理
     $data = $_POST["data"] ?? '';
     
-    // 將資料按行分割
-    $lines = explode("\n", $data);
-
     // 檢查是否有資料
-    if (empty($lines)) {
+    if (empty($data)) {
         die("錯誤：請填寫資料！");
     }
 
-    // 預備 SQL 語句
-    $stmt = $conn->prepare("INSERT INTO enroll3data (考試年度, 考試等級, 職系, 類科, 用人機關名稱, 現缺, 非現缺一, 非現缺二, 非現缺三, 合計) 
+    // 將資料按行分割
+    $lines = explode("\n", $data);
+
+    // 檢查每行資料的格式，過濾空行
+    $lines = array_filter($lines, function($line) {
+        return !empty(trim($line));
+    });
+
+    // 預備 SQL 語句（修改後的欄位名稱）
+    $stmt = $conn->prepare("INSERT INTO enroll3data (enroll3year, enroll3level, enroll3grade, enroll3class, enroll3name, enroll3now, enroll3notnow1, enroll3notnow2, enroll3notnow3, enroll3total) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     if (!$stmt) {
@@ -36,18 +41,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 記錄是否有錯誤
     $errorOccurred = false;
+    $lineNumber = 1; // 記錄行數
 
     // 逐行處理資料
     foreach ($lines as $line) {
         // 使用空格分割每行的資料
         $fields = preg_split('/\s+/', trim($line));
         
-        // 如果是空行，跳過
-        if (empty($fields)) continue;
-
         // 檢查每行資料是否有足夠的欄位
         if (count($fields) != 10) {
-            echo "錯誤：每行資料必須包含 10 個欄位！<br>";
+            echo "錯誤：第 $lineNumber 行資料必須包含 10 個欄位！<br>";
             $errorOccurred = true;
             break; // 出現錯誤後停止處理資料
         }
@@ -57,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // 檢查民國年份是否在 93 至 116 年之間
         if ($考試年度 < 93 || $考試年度 > 116) {
-            echo "錯誤：考試年度必須在民國93年至116年之間！<br>";
+            echo "錯誤：第 $lineNumber 行的考試年度必須在民國93年至116年之間！<br>";
             $errorOccurred = true;
             break;
         }
@@ -72,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $非現缺三 = intval($fields[8]);
         $合計 = intval($fields[9]);
 
-        // 綁定參數
+        // 綁定參數（對應修改後的欄位名稱）
         $stmt->bind_param("ssssssssii", 
             $考試年度, 
             $考試等級, 
@@ -88,9 +91,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // 執行 SQL
         if (!$stmt->execute()) {
-            echo "資料新增失敗：" . $stmt->error . "<br>";
+            echo "第 $lineNumber 行資料新增失敗：" . $stmt->error . "<br>";
             $errorOccurred = true;
+            break;
         }
+
+        $lineNumber++;
     }
 
     // 若無錯誤，顯示資料新增成功並跳轉
