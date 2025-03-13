@@ -17,6 +17,9 @@ if ($conn->connect_error) {
     die(json_encode(["error" => "連線失敗：" . $conn->connect_error]));
 }
 
+// 設定 MySQL 連線使用 utf8mb4
+$conn->set_charset("utf8mb4");
+
 $examYear = isset($_GET['examYear']) ? $_GET['examYear'] : '';
 $examLevel = isset($_GET['examLevel']) ? $_GET['examLevel'] : '';
 $jobSystem = isset($_GET['jobSystem']) ? $_GET['jobSystem'] : '';
