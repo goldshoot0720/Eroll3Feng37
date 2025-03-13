@@ -1,0 +1,24 @@
+{
+    "name": "Eroll3Feng37",
+    "version": "1.0.0",
+    "description": "Eroll3Feng37",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder"
+    },
+    "devDependencies": {
+        "electron": "^25.0.0",
+        "electron-builder": "^24.13.3"
+    },
+    "build": {
+        "appId": "com.feng37.eroll3.feng2025",
+        "win": {
+            "target": "zip",
+            "icon": "build/icon.ico"
+        },
+        "directories": {
+            "output": "dist"
+        }
+    }
+}
