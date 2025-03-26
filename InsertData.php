@@ -1,8 +1,8 @@
 <?php
-$servername = "127.0.0.1";
-$username = "root";
-$password = "";
-$dbname = "feng37enroll3";
+$servername = "sql301.infinityfree.com";
+$username = "if0_38435166";
+$password = "gf0Tagood129";
+$dbname = "if0_38435166_feng37enroll3";
 
 // 建立資料庫連線
 $conn = new mysqli($servername, $username, $password, $dbname);

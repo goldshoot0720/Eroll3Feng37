@@ -4,10 +4,10 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 // 資料庫連接資訊
-$servername = "127.0.0.1";
-$username = "root"; // 根據你的資料庫設定
-$password = ""; // 根據你的資料庫設定
-$dbname = "feng37enroll3";
+$servername = "sql301.infinityfree.com";
+$username = "if0_38435166"; // 根據你的資料庫設定
+$password = "gf0Tagood129"; // 根據你的資料庫設定
+$dbname = "if0_38435166_feng37enroll3";
 
 // 建立資料庫連接
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -22,7 +22,6 @@ $conn->set_charset("utf8mb4");
 
 $examYear = isset($_GET['examYear']) ? $_GET['examYear'] : '';
 $examLevel = isset($_GET['examLevel']) ? $_GET['examLevel'] : '';
-$jobSystem = isset($_GET['jobSystem']) ? $_GET['jobSystem'] : '';
 $jobCategory = isset($_GET['jobCategory']) ? $_GET['jobCategory'] : '';
 $column = isset($_GET['column']) ? $_GET['column'] : '';
 
@@ -44,14 +43,14 @@ if ($column) {
 
     // 回傳資料
     echo json_encode($data);
-} elseif ($examYear && $examLevel && $jobSystem && $jobCategory) {
-    // 查詢根據條件資料
-    $stmt = $conn->prepare("SELECT `enroll3name`, `enroll3total` FROM `enroll3data` WHERE `enroll3year` = ? AND `enroll3level` = ? AND `enroll3grade` = ? AND `enroll3class` = ?");
+} elseif ($examYear && $examLevel && $jobCategory) {
+    // 查詢根據條件資料（取消 `jobSystem` 條件）
+    $stmt = $conn->prepare("SELECT `enroll3name`, `enroll3total` FROM `enroll3data` WHERE `enroll3year` = ? AND `enroll3level` = ? AND `enroll3class` = ?");
     if ($stmt === false) {
         die(json_encode(["error" => "準備查詢失敗：" . $conn->error]));
     }
 
-    $stmt->bind_param("ssss", $examYear, $examLevel, $jobSystem, $jobCategory);
+    $stmt->bind_param("sss", $examYear, $examLevel, $jobCategory);
     $stmt->execute();
     $result = $stmt->get_result();
 
