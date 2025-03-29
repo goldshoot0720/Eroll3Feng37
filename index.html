@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eroll3Feng37</title>
+    <title>用人機關查詢與新增資料</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -20,7 +20,6 @@
         .icon-group a { text-decoration: none; color: #007BFF; }
         .icon-group i { font-size: 1.2rem; }
         .result-table td { text-align: left; }
-        
         /* Scroll buttons */
         .scroll-btn {
             position: fixed;
@@ -38,18 +37,41 @@
             font-size: 20px;
             cursor: pointer;
         }
-
         .scroll-btn-go-bottom {
             bottom: 80px;
+        }
+        /* Styling for the Add Data section */
+        .add-data-container { display: none; width: 80%; max-width: 800px; margin: 50px auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px; }
+        .footer { text-align: center; margin-top: 20px; font-size: 14px; color: #888; }
+        .footer a { color: #4CAF50; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .error { color: red; font-size: 14px; margin-top: -10px; margin-bottom: 20px; }
+        
+        /* Update the size for the '資料' section */
+        textarea {
+            width: 100%; /* Make the textarea wide */
+            height: 200px; /* Make the textarea taller */
+            font-size: 18px; /* Larger text inside textarea */
+            padding: 10px;
+        }
+
+        /* Larger font for the '返回查詢' text */
+        .footer a {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Add padding for general spacing */
+        .add-data-container {
+            padding: 30px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- 用人機關查詢 Section -->
         <h2 class="text-center mb-4">用人機關查詢</h2>
-
-        <!-- 查詢表單 -->
         <form id="queryForm" class="row g-3">
             <div class="col-12 col-md-4">
                 <label for="examYear" class="form-label">
@@ -80,7 +102,7 @@
         </form>
 
         <div class="button-group mt-4">
-            <a href="addData.html" class="btn btn-success">
+            <a href="#" class="btn btn-success" onclick="showAddData()">
                 <i class="fas fa-plus-circle"></i> 新增
             </a>
             <button type="button" class="btn btn-primary" onclick="getResult()">
@@ -88,14 +110,28 @@
             </button>
         </div>
 
-        <!-- 載入動畫 -->
         <div id="loader" class="loader">載入中...</div>
-
-        <!-- 顯示查詢結果 -->
         <div id="result" class="mt-4"></div>
     </div>
 
-    <!-- Go Top and Go Bottom Buttons -->
+    <!-- 新增資料 Section -->
+    <div class="add-data-container">
+        <h1>新增資料</h1>
+        <form action="InsertData.php" method="POST" onsubmit="return validateForm()">
+            <label for="data">資料 (每行為一筆資料, 以空格區隔各欄位):</label>
+            <textarea id="data" name="data" placeholder="每行為一筆資料, 以空格區隔各欄位" aria-label="資料輸入框"></textarea>
+            <div id="error-message" class="error"></div>
+            <input type="submit" value="提交資料">
+            <i class="fas fa-paper-plane"></i>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 <a href="#" onclick="showQuery()">返回查詢</a></p>
+    </div>
+
+    <!-- Scroll Buttons -->
     <button class="scroll-btn" onclick="scrollToTop()">
         <i class="fas fa-arrow-up"></i>
     </button>
@@ -103,14 +139,12 @@
         <i class="fas fa-arrow-down"></i>
     </button>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         window.onload = async function() {
             await fetchOptions("考試年度", "examYear");
             await fetchOptions("考試等級", "examLevel");
             await fetchOptions("類科", "jobCategory");
 
-            // 讀取 localStorage 內容
             const savedExamYear = localStorage.getItem("examYear");
             const savedExamLevel = localStorage.getItem("examLevel");
             const savedJobCategory = localStorage.getItem("jobCategory");
@@ -149,12 +183,10 @@
                 return;
             }
 
-            // 儲存到 localStorage
             localStorage.setItem("examYear", examYear);
             localStorage.setItem("examLevel", examLevel);
             localStorage.setItem("jobCategory", jobCategory);
 
-            // 顯示載入動畫
             document.getElementById("loader").style.display = "block";
 
             try {
@@ -221,6 +253,26 @@
         function scrollToBottom() {
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
+
+        function showAddData() {
+            document.querySelector('.container').style.display = 'none';
+            document.querySelector('.add-data-container').style.display = 'block';
+        }
+
+        function showQuery() {
+            document.querySelector('.container').style.display = 'block';
+            document.querySelector('.add-data-container').style.display = 'none';
+        }
+
+        function validateForm() {
+            const dataInput = document.getElementById("data").value.trim();
+            if (!dataInput) {
+                document.getElementById("error-message").textContent = "資料欄位不能為空!";
+                return false;
+            }
+            return true;
+        }
     </script>
+
 </body>
 </html>

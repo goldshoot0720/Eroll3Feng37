@@ -110,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         document.getElementById('countdown').innerText = countdown;
                         countdown--;
                     } else {
-                        window.location.href = 'addData.html';
+                        window.location.href = 'index.html';
                     }
                 }
                 setInterval(updateCountdown, 1000);
